@@ -1,9 +1,10 @@
 package br.com.stipz.service;
 
-import br.com.stipz.DTO.RecursoDTO;
-import br.com.stipz.DTO.ReservaRequestDTO;
+import br.com.stipz.DTO.*;
 import br.com.stipz.domain.*;
 import br.com.stipz.enums.StatusReserva;
+import br.com.stipz.exception.RegraNegocioException;
+import br.com.stipz.exception.RecursoNaoEncontradoException;
 import br.com.stipz.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -34,20 +35,23 @@ public class ReservaService {
         this.reservaRecursoRepository = reservaRecursoRepository;
     }
 
-    public List<Reserva> listar() {
-        return reservaRepository.findAll();
+    public List<ReservaResponseDTO> listar() {
+        return reservaRepository.findAll()
+                .stream()
+                .map(this::toDTO)
+                .toList();
     }
 
-    public Reserva criarReservaCompleta(ReservaRequestDTO dto) {
+    public ReservaResponseDTO criarReservaCompleta(ReservaRequestDTO dto) {
 
         Usuario usuario = usuarioRepository.findById(dto.usuarioId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
         Sala sala = salaRepository.findById(dto.salaId)
-                .orElseThrow(() -> new RuntimeException("Sala não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Sala não encontrada"));
 
         if (dto.fim.isBefore(dto.inicio)) {
-            throw new RuntimeException("Data fim não pode ser antes do início");
+            throw new RegraNegocioException("Data fim não pode ser antes do início");
         }
 
         boolean conflito = reservaRepository
@@ -56,7 +60,7 @@ public class ReservaService {
                 );
 
         if (conflito) {
-            throw new RuntimeException("Conflito de horário");
+            throw new RegraNegocioException("Conflito de horário");
         }
 
         LocalDateTime inicioSemana = dto.inicio
@@ -72,7 +76,7 @@ public class ReservaService {
         );
 
         if (total >= 5) {
-            throw new RuntimeException("Limite de 5 reservas por semana atingido");
+            throw new RegraNegocioException("Limite de 5 reservas por semana atingido");
         }
 
         Reserva reserva = new Reserva();
@@ -86,23 +90,37 @@ public class ReservaService {
 
         reserva = reservaRepository.save(reserva);
 
+        if (reserva.getRecursos() == null) {
+            reserva.setRecursos(new java.util.ArrayList<>());
+        }
+
         if (dto.recursos != null && !dto.recursos.isEmpty()) {
 
             for (RecursoDTO r : dto.recursos) {
 
                 if (r.recursoId == null) {
-                    throw new RuntimeException("ID do recurso não informado");
+                    throw new RegraNegocioException("ID do recurso não informado");
                 }
 
                 if (r.quantidade == null || r.quantidade <= 0) {
-                    throw new RuntimeException("Quantidade inválida");
+                    throw new RegraNegocioException("Quantidade inválida");
                 }
 
                 Recurso recurso = recursoRepository.findById(r.recursoId)
-                        .orElseThrow(() -> new RuntimeException("Recurso não encontrado"));
+                        .orElseThrow(() -> new RecursoNaoEncontradoException("Recurso não encontrado"));
+
+                TipoRecurso tipo = recurso.getTipoRecurso();
+
+                if (!tipo.getPermitido() && !tipo.getExigeAprovacao()) {
+                    throw new RegraNegocioException("Recurso não permitido: " + recurso.getNome());
+                }
+
+                if (tipo.getExigeAprovacao()) {
+                    reserva.setStatus(StatusReserva.PENDENTE);
+                }
 
                 if (recurso.getFixo() && !recurso.getSala().getId().equals(sala.getId())) {
-                    throw new RuntimeException("Recurso fixo não pertence a essa sala");
+                    throw new RegraNegocioException("Recurso fixo não pertence a essa sala");
                 }
 
                 List<ReservaRecurso> reservas = reservaRecursoRepository.findByRecurso(recurso);
@@ -117,7 +135,7 @@ public class ReservaService {
                         .sum();
 
                 if (totalReservado + r.quantidade > recurso.getQuantidade()) {
-                    throw new RuntimeException("Recurso indisponível: " + recurso.getNome());
+                    throw new RegraNegocioException("Recurso indisponível: " + recurso.getNome());
                 }
 
                 ReservaRecurso rr = new ReservaRecurso();
@@ -125,20 +143,21 @@ public class ReservaService {
                 rr.setRecurso(recurso);
                 rr.setQuantidade(r.quantidade);
 
-                reservaRecursoRepository.save(rr);
+                rr = reservaRecursoRepository.save(rr);
+
+                reserva.getRecursos().add(rr);
             }
         }
 
-        return reserva;
+        return toDTO(reserva);
     }
 
     public Reserva aprovar(Long id) {
-
         Reserva reserva = reservaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Reserva não encontrada"));
 
         if (reserva.getStatus() != StatusReserva.PENDENTE) {
-            throw new RuntimeException("Reserva já foi processada");
+            throw new RegraNegocioException("Reserva já foi processada");
         }
 
         reserva.setStatus(StatusReserva.APROVADA);
@@ -148,12 +167,11 @@ public class ReservaService {
     }
 
     public Reserva rejeitar(Long id) {
-
         Reserva reserva = reservaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Reserva não encontrada"));
 
         if (reserva.getStatus() != StatusReserva.PENDENTE) {
-            throw new RuntimeException("Reserva já foi processada");
+            throw new RegraNegocioException("Reserva já foi processada");
         }
 
         reserva.setStatus(StatusReserva.REJEITADA);
@@ -163,23 +181,49 @@ public class ReservaService {
     }
 
     public Reserva cancelar(Long id) {
-
         Reserva reserva = reservaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Reserva não encontrada"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Reserva não encontrada"));
 
         if (reserva.getStatus() == StatusReserva.CANCELADA) {
-            throw new RuntimeException("Reserva já está cancelada");
+            throw new RegraNegocioException("Reserva já está cancelada");
         }
 
         LocalDateTime agora = LocalDateTime.now();
 
         if (reserva.getDataInicio().minusHours(3).isBefore(agora)) {
-            throw new RuntimeException("Não é possível cancelar com menos de 3 horas");
+            throw new RegraNegocioException("Não é possível cancelar com menos de 3 horas");
         }
 
         reserva.setStatus(StatusReserva.CANCELADA);
         reserva.setDataAtualizacao(LocalDateTime.now());
 
         return reservaRepository.save(reserva);
+    }
+
+    private ReservaResponseDTO toDTO(Reserva reserva) {
+        ReservaResponseDTO dto = new ReservaResponseDTO();
+
+        dto.id = reserva.getId();
+        dto.dataInicio = reserva.getDataInicio();
+        dto.dataFim = reserva.getDataFim();
+        dto.status = reserva.getStatus().name();
+
+        dto.usuario = new UsuarioResumoDTO();
+        dto.usuario.id = reserva.getUsuario().getId();
+        dto.usuario.nome = reserva.getUsuario().getNome();
+
+        dto.sala = new SalaResumoDTO();
+        dto.sala.id = reserva.getSala().getId();
+        dto.sala.nome = reserva.getSala().getNome();
+
+        dto.recursos = (reserva.getRecursos() == null ? List.of() :
+                reserva.getRecursos().stream().map(rr -> {
+                    RecursoResumoDTO r = new RecursoResumoDTO();
+                    r.nome = rr.getRecurso().getNome();
+                    r.quantidade = rr.getQuantidade();
+                    return r;
+                }).toList());
+
+        return dto;
     }
 }

@@ -1,7 +1,9 @@
 package br.com.stipz.controller;
 
+import br.com.stipz.DTO.UsuarioRequestDTO;
 import br.com.stipz.domain.Usuario;
 import br.com.stipz.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +19,8 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        return usuarioService.criar(usuario);
+    public Usuario criar(@Valid @RequestBody UsuarioRequestDTO dto) {
+        return usuarioService.criar(dto);
     }
 
     @GetMapping

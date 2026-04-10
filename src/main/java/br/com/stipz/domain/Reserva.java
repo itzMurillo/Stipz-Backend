@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reserva")
@@ -42,4 +43,7 @@ public class Reserva {
     private LocalDateTime dataCriacao;
 
     private LocalDateTime dataAtualizacao;
+
+    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReservaRecurso> recursos;
 }

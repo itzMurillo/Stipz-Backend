@@ -1,11 +1,10 @@
 package br.com.stipz.service;
 
-import br.com.stipz.domain.Recurso;
-import br.com.stipz.domain.Sala;
-import br.com.stipz.domain.TipoRecurso;
+import br.com.stipz.domain.*;
 import br.com.stipz.enums.CategoriaRecurso;
-import br.com.stipz.repository.RecursoRepository;
-import br.com.stipz.repository.SalaRepository;
+import br.com.stipz.exception.RegraNegocioException;
+import br.com.stipz.exception.RecursoNaoEncontradoException;
+import br.com.stipz.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,24 +36,24 @@ public class RecursoService {
     ) {
 
         if (fixo == null) {
-            throw new RuntimeException("Campo 'fixo' é obrigatório");
+            throw new RegraNegocioException("Campo 'fixo' é obrigatório");
         }
 
         if (salaId == null) {
-            throw new RuntimeException("Recurso deve estar vinculado a uma sala");
+            throw new RegraNegocioException("Recurso deve estar vinculado a uma sala");
         }
 
         Sala sala = salaRepository.findById(salaId)
-                .orElseThrow(() -> new RuntimeException("Sala não encontrada"));
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Sala não encontrada"));
 
         TipoRecurso tipoRecurso = tipoRecursoService.buscarOuCriar(descricao, categoria);
 
         if (Boolean.TRUE.equals(fixo)) {
-
             boolean exists = recursoRepository.existsByNomeAndSalaId(nome, salaId);
 
             if (exists) {
-                throw new RuntimeException("Recurso já cadastrado nessa sala");
+                throw new RegraNegocioException("Recurso já cadastrado nessa sala");
             }
         }
 

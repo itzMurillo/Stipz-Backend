@@ -1,12 +1,11 @@
 package br.com.stipz.controller;
 
 import br.com.stipz.DTO.ReservaRequestDTO;
+import br.com.stipz.DTO.ReservaResponseDTO;
 import br.com.stipz.domain.Reserva;
 import br.com.stipz.service.ReservaService;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -20,12 +19,12 @@ public class ReservaController {
     }
 
     @PostMapping
-    public Reserva criar(@RequestBody ReservaRequestDTO dto) {
+    public ReservaResponseDTO criar(@RequestBody ReservaRequestDTO dto) {
         return reservaService.criarReservaCompleta(dto);
     }
 
     @GetMapping
-    public List<Reserva> listar() {
+    public List<ReservaResponseDTO> listar() {
         return reservaService.listar();
     }
 
@@ -43,5 +42,4 @@ public class ReservaController {
     public Reserva cancelar(@PathVariable Long id) {
         return reservaService.cancelar(id);
     }
-
 }

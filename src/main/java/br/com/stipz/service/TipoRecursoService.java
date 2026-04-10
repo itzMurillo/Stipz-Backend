@@ -20,16 +20,22 @@ public class TipoRecursoService {
 
         return tipoRecursoRepository.findByNomeIgnoreCase(nome)
                 .orElseGet(() -> {
+
                     TipoRecurso novo = new TipoRecurso();
                     novo.setNome(nome);
                     novo.setCategoria(categoria);
-                    novo.setPermitido(true);
 
-                    // 🔥 regra automática
-                    novo.setExigeAprovacao(
+                    boolean exigeAprovacao =
                             categoria == CategoriaRecurso.ALIMENTICIO
-                                    || categoria == CategoriaRecurso.OUTRO
-                    );
+                                    || categoria == CategoriaRecurso.OUTRO;
+
+                    novo.setExigeAprovacao(exigeAprovacao);
+
+                    if (exigeAprovacao) {
+                        novo.setPermitido(false);
+                    } else {
+                        novo.setPermitido(true);
+                    }
 
                     return tipoRecursoRepository.save(novo);
                 });

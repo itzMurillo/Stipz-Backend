@@ -1,8 +1,13 @@
 package br.com.stipz.service;
 
+import br.com.stipz.DTO.UsuarioRequestDTO;
 import br.com.stipz.domain.Usuario;
+import br.com.stipz.enums.PerfilUsuario;
+import br.com.stipz.exception.RecursoNaoEncontradoException;
+import br.com.stipz.exception.RegraNegocioException;
 import br.com.stipz.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -14,7 +19,18 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario criar(Usuario usuario) {
+    public Usuario criar(UsuarioRequestDTO dto) {
+
+        if (usuarioRepository.existsByNomeIgnoreCaseAndEmailIgnoreCase(dto.nome, dto.email)) {
+            throw new RegraNegocioException("Já existe um usuário cadastrado com esse nome e email");
+        }
+
+        Usuario usuario = new Usuario();
+        usuario.setNome(dto.nome);
+        usuario.setEmail(dto.email);
+        usuario.setSenha(dto.senha);
+        usuario.setPerfil(PerfilUsuario.valueOf(dto.perfil));
+
         return usuarioRepository.save(usuario);
     }
 
@@ -24,10 +40,14 @@ public class UsuarioService {
 
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException("Usuário não encontrado"));
     }
 
     public void deletar(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RecursoNaoEncontradoException("Usuário não encontrado");
+        }
         usuarioRepository.deleteById(id);
     }
 }

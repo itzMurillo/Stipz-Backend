@@ -8,4 +8,3 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
 
     List<Auditoria> findByUsuarioId(Long usuarioId);
 }
-

@@ -1,5 +1,6 @@
 package br.com.stipz.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,8 +16,9 @@ public class ReservaRecurso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "id_reserva", nullable = false)
+    @JsonIgnore
     private Reserva reserva;
 
     @ManyToOne(optional = false)
