@@ -1,4 +1,4 @@
-# 📌 Stipz - Backend
+# Stipz - Backend
 
 Sistema de gerenciamento de **reservas de salas e recursos**, desenvolvido com **Spring Boot**.
 
