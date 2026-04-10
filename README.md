@@ -30,11 +30,11 @@ O Stipz é uma aplicação que permite:
 ##  Estrutura do projeto
 
 src/main/java/br/com/stipz
-├── config # Configurações (CORS, Security)
-├── controller # Endpoints da API
-├── domain # Entidades
-├── DTO # Objetos de transferência
-├── enums # Enumerações
-├── exception # Tratamento de erros
-├── repository # Acesso ao banco
-├── service # Regras de negócio
+-  config # Configurações (CORS, Security)
+-  controller # Endpoints da API
+-  domain # Entidades
+-  DTO # Objetos de transferência
+-  nums # Enumerações
+-  exception # Tratamento de erros
+-  repository # Acesso ao banco
+-  service # Regras de negócio
