@@ -3,8 +3,10 @@ package br.com.stipz.repository;
 import br.com.stipz.domain.Reserva;
 import br.com.stipz.domain.ReservaRecurso;
 import br.com.stipz.domain.Recurso;
+import br.com.stipz.enums.StatusReserva;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,13 +16,25 @@ public interface ReservaRecursoRepository extends JpaRepository<ReservaRecurso, 
     List<ReservaRecurso> findByRecurso(Recurso recurso);
 
     @Query("""
-SELECT r FROM Reserva r
-WHERE r.sala.id = :salaId
-AND (
-    (:inicio BETWEEN r.dataInicio AND r.dataFim)
-    OR (:fim BETWEEN r.dataInicio AND r.dataFim)
-    OR (r.dataInicio BETWEEN :inicio AND :fim)
-)
-""")
-    List<Reserva> verificarConflito(Long salaId, LocalDateTime inicio, LocalDateTime fim);
+        SELECT COALESCE(SUM(rr.quantidade), 0)
+        FROM ReservaRecurso rr
+        WHERE rr.recurso = :recurso
+          AND rr.reserva.status <> :statusIgnorado
+          AND rr.reserva.dataInicio < :fim
+          AND rr.reserva.dataFim > :inicio
+    """)
+    Integer somarQuantidadeReservadaNoPeriodo(
+            @Param("recurso") Recurso recurso,
+            @Param("inicio") LocalDateTime inicio,
+            @Param("fim") LocalDateTime fim,
+            @Param("statusIgnorado") StatusReserva statusIgnorado
+    );
+
+    //evitar N+1(recurso)
+    @Query("""
+        SELECT rr FROM ReservaRecurso rr
+        JOIN FETCH rr.recurso
+        WHERE rr.reserva = :reserva
+    """)
+    List<ReservaRecurso> findByReservaComRecurso(@Param("reserva") Reserva reserva);
 }

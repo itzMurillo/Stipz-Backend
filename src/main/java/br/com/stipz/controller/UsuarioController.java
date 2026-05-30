@@ -1,7 +1,7 @@
 package br.com.stipz.controller;
 
 import br.com.stipz.DTO.UsuarioRequestDTO;
-import br.com.stipz.domain.Usuario;
+import br.com.stipz.DTO.UsuarioResponseDTO;
 import br.com.stipz.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +19,17 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario criar(@Valid @RequestBody UsuarioRequestDTO dto) {
-        return usuarioService.criar(dto);
+    public UsuarioResponseDTO criar(@Valid @RequestBody UsuarioRequestDTO dto) {
+        return usuarioService.criarResposta(dto);
     }
 
     @GetMapping
-    public List<Usuario> listar() {
+    public List<UsuarioResponseDTO> listar() {
         return usuarioService.listar();
     }
 
     @GetMapping("/{id}")
-    public Usuario buscar(@PathVariable Long id) {
+    public UsuarioResponseDTO buscar(@PathVariable Long id) {
         return usuarioService.buscarPorId(id);
     }
 

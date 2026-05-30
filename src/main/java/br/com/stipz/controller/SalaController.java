@@ -1,7 +1,9 @@
 package br.com.stipz.controller;
 
+import br.com.stipz.DTO.SalaRequestDTO;
 import br.com.stipz.domain.Sala;
 import br.com.stipz.service.SalaService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +19,8 @@ public class SalaController {
     }
 
     @PostMapping
-    public Sala criar(@RequestBody Sala sala) {
-        return salaService.criar(sala);
+    public Sala criar(@Valid @RequestBody SalaRequestDTO dto) {
+        return salaService.criar(dto);
     }
 
     @GetMapping

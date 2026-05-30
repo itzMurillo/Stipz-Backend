@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Audited
 public class Evento {
 
     @Id
@@ -21,17 +23,18 @@ public class Evento {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
-    @Column(nullable = false)
     private String nome;
 
     private String descricao;
 
-    @Column(nullable = false)
     private String justificativa;
 
-    @Column(nullable = false)
+    private LocalDateTime dataInicio;
+
+    private LocalDateTime dataFim;
+
     private LocalDateTime dataCriacao;
 }

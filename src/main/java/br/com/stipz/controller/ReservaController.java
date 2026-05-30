@@ -4,6 +4,7 @@ import br.com.stipz.DTO.ReservaRequestDTO;
 import br.com.stipz.DTO.ReservaResponseDTO;
 import br.com.stipz.domain.Reserva;
 import br.com.stipz.service.ReservaService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class ReservaController {
     }
 
     @PostMapping
-    public ReservaResponseDTO criar(@RequestBody ReservaRequestDTO dto) {
+    public ReservaResponseDTO criar(@Valid @RequestBody ReservaRequestDTO dto) {
         return reservaService.criarReservaCompleta(dto);
     }
 

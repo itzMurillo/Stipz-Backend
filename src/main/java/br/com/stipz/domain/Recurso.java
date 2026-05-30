@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.envers.Audited;
 
 @Entity
 @Table(name = "recurso")
@@ -12,26 +13,24 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Audited
 public class Recurso {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String nome;
 
-    @Column(nullable = false)
     private Integer quantidade;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_tipo_recurso")
-    private TipoRecurso tipoRecurso;
+    private Boolean fixo;
 
     @ManyToOne
     @JoinColumn(name = "id_sala")
     private Sala sala;
 
-    @Column(nullable = false)
-    private Boolean fixo;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_tipo_recurso", nullable = false)
+    private TipoRecurso tipoRecurso;
 }
