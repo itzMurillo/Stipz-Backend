@@ -5,21 +5,22 @@ import jakarta.validation.constraints.*;
 
 public class RecursoRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Nome do recurso é obrigatório")
     public String nome;
 
-    @NotBlank
+    @NotBlank(message = "Descrição do recurso é obrigatória")
     public String descricao;
 
-    @NotNull
+    @NotNull(message = "Categoria do recurso é obrigatória")
     public CategoriaRecurso categoria;
 
-    @NotNull
-    @Min(1)
+    @NotNull(message = "Quantidade do recurso é obrigatória")
+    @Min(value = 1, message = "Quantidade do recurso deve ser maior que zero")
     public Integer quantidade;
 
+    @NotNull(message = "Sala do recurso é obrigatória")
     public Long salaId;
 
-    @NotNull
+    @NotNull(message = "Campo fixo é obrigatório")
     public Boolean fixo;
 }

@@ -2,18 +2,22 @@ package br.com.stipz.DTO;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class ReservaRequestDTO {
+public class EventoRequestDTO {
 
-    @NotNull(message = "Usuário é obrigatório")
-    public Long usuarioId;
+    @NotBlank(message = "Nome do evento é obrigatório")
+    public String nome;
 
-    @NotNull(message = "Sala é obrigatória")
-    public Long salaId;
+    public String descricao;
+
+    @NotBlank(message = "Justificativa é obrigatória para eventos com múltiplas salas")
+    public String justificativa;
 
     @NotNull(message = "Data de início é obrigatória")
     @Future(message = "Data de início deve ser futura")
@@ -24,5 +28,6 @@ public class ReservaRequestDTO {
     public LocalDateTime fim;
 
     @Valid
-    public List<RecursoDTO> recursos;
+    @NotEmpty(message = "Informe ao menos uma sala para o evento")
+    public List<EventoSalaRequestDTO> salas;
 }

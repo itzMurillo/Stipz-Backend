@@ -15,15 +15,18 @@ public class RecursoService {
     private final RecursoRepository recursoRepository;
     private final TipoRecursoService tipoRecursoService;
     private final SalaRepository salaRepository;
+    private final NotificacaoService notificacaoService;
 
     public RecursoService(
             RecursoRepository recursoRepository,
             TipoRecursoService tipoRecursoService,
-            SalaRepository salaRepository
+            SalaRepository salaRepository,
+            NotificacaoService notificacaoService
     ) {
         this.recursoRepository = recursoRepository;
         this.tipoRecursoService = tipoRecursoService;
         this.salaRepository = salaRepository;
+        this.notificacaoService = notificacaoService;
     }
 
     public Recurso criar(
@@ -64,7 +67,9 @@ public class RecursoService {
         recurso.setFixo(fixo);
         recurso.setSala(sala);
 
-        return recursoRepository.save(recurso);
+        Recurso recursoSalvo = recursoRepository.save(recurso);
+        notificacaoService.avisarAlteracao("RECURSO_CRIADO");
+        return recursoSalvo;
     }
 
     public List<Recurso> listar() {
