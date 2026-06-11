@@ -4,12 +4,15 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -101,6 +104,18 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErroResponse> parametroObrigatorioAusente(
+            MissingServletRequestParameterException ex,
+            HttpServletRequest request
+    ) {
+        return erro(
+                HttpStatus.BAD_REQUEST,
+                "Parâmetro obrigatório ausente: " + ex.getParameterName(),
+                request
+        );
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErroResponse> argumentoInvalido(
             IllegalArgumentException ex,
@@ -122,7 +137,11 @@ public class GlobalExceptionHandler {
             AuthenticationException ex,
             HttpServletRequest request
     ) {
-        return erro(HttpStatus.UNAUTHORIZED, "Autenticação obrigatória", request);
+        String mensagem = ex instanceof BadCredentialsException
+                ? "Email ou senha inválidos"
+                : "Autenticação obrigatória";
+
+        return erro(HttpStatus.UNAUTHORIZED, mensagem, request);
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
@@ -152,7 +171,7 @@ public class GlobalExceptionHandler {
                 new ErroResponse(
                         LocalDateTime.now(),
                         500,
-                        ex.getMessage(),
+                        "Erro interno do servidor",
                         request.getRequestURI()
                 )
         );
@@ -181,6 +200,18 @@ public class GlobalExceptionHandler {
                         mensagem,
                         request.getRequestURI()
                 )
+        );
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ErroResponse> conflitoConcorrente(
+            PessimisticLockingFailureException ex,
+            HttpServletRequest request
+    ) {
+        return erro(
+                HttpStatus.CONFLICT,
+                "Outro usuário alterou estes dados ao mesmo tempo. Atualize e tente novamente",
+                request
         );
     }
 

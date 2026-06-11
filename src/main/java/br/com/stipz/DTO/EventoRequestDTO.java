@@ -16,7 +16,6 @@ public class EventoRequestDTO {
 
     public String descricao;
 
-    @NotBlank(message = "Justificativa é obrigatória para eventos com múltiplas salas")
     public String justificativa;
 
     @NotNull(message = "Data de início é obrigatória")

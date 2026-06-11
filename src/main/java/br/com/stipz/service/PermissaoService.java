@@ -21,7 +21,7 @@ public class PermissaoService {
         }
 
         return List.of(
-                "Consultar usuários, salas, recursos e reservas",
+                "Consultar salas, recursos, eventos e as próprias reservas",
                 "Criar reservas",
                 "Cancelar as próprias reservas conforme regra de antecedência",
                 "Consultar regras de acesso"

@@ -5,12 +5,13 @@ import br.com.stipz.DTO.LoginResponseDTO;
 import br.com.stipz.DTO.RegraAcessoDTO;
 import br.com.stipz.DTO.UsuarioAutenticadoDTO;
 import br.com.stipz.domain.Usuario;
-import br.com.stipz.exception.RegraNegocioException;
+import br.com.stipz.exception.RecursoNaoEncontradoException;
 import br.com.stipz.service.JwtService;
 import br.com.stipz.service.PermissaoService;
 import br.com.stipz.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,10 +44,16 @@ public class AuthController {
 
     @PostMapping("/login")
     public LoginResponseDTO login(@Valid @RequestBody LoginRequestDTO request) {
-        Usuario usuario = usuarioService.buscarPorEmail(request.email);
+        Usuario usuario;
+
+        try {
+            usuario = usuarioService.buscarPorEmail(request.email);
+        } catch (RecursoNaoEncontradoException ex) {
+            throw new BadCredentialsException("Email ou senha inválidos");
+        }
 
         if (!passwordEncoder.matches(request.senha, usuario.getSenha())) {
-            throw new RegraNegocioException("Email ou senha inválidos");
+            throw new BadCredentialsException("Email ou senha inválidos");
         }
 
         LoginResponseDTO response = new LoginResponseDTO();

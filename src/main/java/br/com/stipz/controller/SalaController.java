@@ -6,6 +6,7 @@ import br.com.stipz.service.SalaService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -31,6 +32,14 @@ public class SalaController {
     @GetMapping("/{id}")
     public Sala buscar(@PathVariable Long id) {
         return salaService.buscar(id);
+    }
+
+    @GetMapping("/disponiveis")
+    public List<Sala> listarDisponiveis(
+            @RequestParam LocalDateTime inicio,
+            @RequestParam LocalDateTime fim
+    ) {
+        return salaService.listarDisponiveis(inicio, fim);
     }
 
     @DeleteMapping("/{id}")

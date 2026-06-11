@@ -154,13 +154,15 @@ public class BackupAuditoriaService {
                         'Reserva #' || rv.id || ': ' || case rv.revtype when 0 then 'CRIADA' when 1 then 'ALTERADA' else 'EXCLUIDA' end ||
                         ' - status ' || coalesce(rv.status, '') || ', sala #' || coalesce(rv.id_sala::text, '') ||
                         ', usuario #' || coalesce(rv.id_usuario::text, '') || ', inicio ' || coalesce(rv.data_inicio::text, '') ||
-                        ', fim ' || coalesce(rv.data_fim::text, '') as descricao
+                        ', fim ' || coalesce(rv.data_fim::text, '') ||
+                        ', cadeiras extras ' || case when coalesce(rv.cadeiras_extras, false) then 'sim' else 'nao' end ||
+                        ', quantidade ' || coalesce(rv.quantidade_cadeiras::text, '0') as descricao
                     from reserva_aud rv join revinfo r on r.rev = rv.rev
 
                     union all
 
                     select rr.rev, r.revtstmp,
-                        'Recurso da reserva #' || coalesce(rr.id_reserva::text, '') || ': ' ||
+                        'Vinculo de recurso #' || rr.id || ' da reserva #' || coalesce(rr.id_reserva::text, '') || ': ' ||
                         case rr.revtype when 0 then 'CRIADO' when 1 then 'ALTERADO' else 'EXCLUIDO' end ||
                         ' - recurso #' || coalesce(rr.id_recurso::text, '') || ', quantidade ' || coalesce(rr.quantidade::text, '') as descricao
                     from reserva_recurso_aud rr join revinfo r on r.rev = rr.rev
@@ -173,7 +175,7 @@ public class BackupAuditoriaService {
                         ', fim ' || coalesce(e.data_fim::text, '') as descricao
                     from evento_aud e join revinfo r on r.rev = e.rev
                 ) auditoria
-                order by rev
+                order by rev, descricao
                 """);
 
         List<String> linhas = new ArrayList<>();
