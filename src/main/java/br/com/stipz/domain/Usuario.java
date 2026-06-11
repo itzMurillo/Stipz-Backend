@@ -1,6 +1,7 @@
 package br.com.stipz.domain;
 
 import br.com.stipz.enums.PerfilUsuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Usuario {
 
     private String email;
 
+    @JsonIgnore
     private String senha;
 
     @Enumerated(EnumType.STRING)

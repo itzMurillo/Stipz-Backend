@@ -80,10 +80,14 @@ public class UsuarioService {
     }
 
     public void deletar(Long id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Usuário não encontrado");
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        if (usuario.getPerfil() == PerfilUsuario.ADMIN) {
+            throw new RegraNegocioException("O administrador inicial não pode ser excluído");
         }
-        usuarioRepository.deleteById(id);
+
+        usuarioRepository.delete(usuario);
         notificacaoService.avisarAlteracao("USUARIO_EXCLUIDO");
     }
 

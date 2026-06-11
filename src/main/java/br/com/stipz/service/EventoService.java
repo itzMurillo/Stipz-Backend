@@ -52,6 +52,7 @@ public class EventoService {
         }
 
         validarSalasDuplicadas(dto);
+        validarJustificativa(dto);
 
         Evento evento = new Evento();
         evento.setUsuario(usuario);
@@ -68,9 +69,16 @@ public class EventoService {
             ReservaRequestDTO reserva = new ReservaRequestDTO();
             reserva.usuarioId = usuario.getId();
             reserva.salaId = sala.salaId;
-            reserva.inicio = dto.inicio;
-            reserva.fim = dto.fim;
+            reserva.inicio = sala.inicio != null ? sala.inicio : dto.inicio;
+            reserva.fim = sala.fim != null ? sala.fim : dto.fim;
             reserva.recursos = sala.recursos;
+            reserva.quantidadeCadeiras = sala.quantidadeCadeiras;
+            reserva.cadeirasExtras = sala.cadeirasExtras;
+            reserva.quantidadeParticipantes = sala.quantidadeParticipantes;
+            reserva.participantes = sala.participantes;
+            reserva.capacidadeSolicitada = sala.capacidadeSolicitada;
+            reserva.responsavel = sala.responsavel;
+            reserva.nomeResponsavel = sala.nomeResponsavel;
 
             reservaService.criarReservaCompleta(reserva, evento);
         }
@@ -95,6 +103,15 @@ public class EventoService {
             if (!salas.add(sala.salaId)) {
                 throw new RegraNegocioException("Sala duplicada no evento");
             }
+        }
+    }
+
+    private void validarJustificativa(EventoRequestDTO dto) {
+        if (dto.salas.size() > 1
+                && (dto.justificativa == null || dto.justificativa.isBlank())) {
+            throw new RegraNegocioException(
+                    "Justificativa é obrigatória para eventos com múltiplas salas"
+            );
         }
     }
 

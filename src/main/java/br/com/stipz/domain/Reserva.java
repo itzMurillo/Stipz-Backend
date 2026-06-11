@@ -38,6 +38,14 @@ public class Reserva {
     @Enumerated(EnumType.STRING)
     private StatusReserva status;
 
+    private String responsavel;
+
+    private String motivoRejeicao;
+
+    private Boolean cadeirasExtras;
+
+    private Integer quantidadeCadeiras;
+
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;
 }

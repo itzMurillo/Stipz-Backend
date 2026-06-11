@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
@@ -29,13 +30,13 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
         WHERE r.sala = :sala
           AND r.dataInicio < :fim
           AND r.dataFim > :inicio
-          AND r.status <> :statusIgnorado
+          AND r.status IN :statusesConsiderados
     """)
     List<Reserva> findConflitosComBloqueio(
             @Param("sala") Sala sala,
             @Param("fim") LocalDateTime fim,
             @Param("inicio") LocalDateTime inicio,
-            @Param("statusIgnorado") StatusReserva statusIgnorado
+            @Param("statusesConsiderados") Collection<StatusReserva> statusesConsiderados
     );
 
     long countByUsuarioAndDataInicioBetween(
@@ -51,6 +52,14 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
         JOIN FETCH r.sala
     """)
     List<Reserva> findAllComUsuarioESala();
+
+    @Query("""
+        SELECT r FROM Reserva r
+        JOIN FETCH r.usuario
+        JOIN FETCH r.sala
+        WHERE r.usuario = :usuario
+    """)
+    List<Reserva> findByUsuarioComUsuarioESala(@Param("usuario") Usuario usuario);
 
     @Query("""
         SELECT r FROM Reserva r

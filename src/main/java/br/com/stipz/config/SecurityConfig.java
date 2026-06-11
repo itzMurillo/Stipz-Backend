@@ -4,10 +4,12 @@ import br.com.stipz.repository.UsuarioRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -33,15 +35,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/notificacoes/stream").permitAll()
                         .requestMatchers("/auth/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/usuarios/**", "/salas/**", "/recursos/**", "/reservas/**", "/eventos/**")
+                        .requestMatchers(HttpMethod.GET, "/reservas/minhas").hasAnyRole("ADMIN", "COMUM")
+                        .requestMatchers(HttpMethod.GET, "/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/salas/**", "/recursos/**", "/eventos/**")
                         .hasAnyRole("ADMIN", "COMUM")
+                        .requestMatchers(HttpMethod.GET, "/reservas/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/reservas", "/eventos").hasAnyRole("ADMIN", "COMUM")
-                        .requestMatchers(HttpMethod.PATCH, "/reservas/*/cancelar").hasAnyRole("ADMIN", "COMUM")
+                        .requestMatchers(HttpMethod.PATCH, "/reservas/*/cancelar", "/reservas/*/substituir").hasAnyRole("ADMIN", "COMUM")
                         .requestMatchers(HttpMethod.POST, "/notificacoes/teste").hasAnyRole("ADMIN", "COMUM")
                         .requestMatchers("/backups/auditoria/**").hasRole("ADMIN")
                         .requestMatchers("/usuarios/**", "/salas/**", "/recursos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/reservas/*/aprovar", "/reservas/*/rejeitar").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLogin -> formLogin.disable())

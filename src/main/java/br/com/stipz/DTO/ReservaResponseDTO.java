@@ -9,6 +9,14 @@ public class ReservaResponseDTO {
     public LocalDateTime dataInicio;
     public LocalDateTime dataFim;
     public String status;
+    public String responsavel;
+    public String motivoRejeicao;
+    public Long eventoId;
+    public String evento;
+    public String eventoDescricao;
+    public String justificativa;
+    public Boolean cadeirasExtras;
+    public Integer quantidadeCadeiras;
 
     public UsuarioResumoDTO usuario;
     public SalaResumoDTO sala;
